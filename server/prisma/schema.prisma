@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Local dev uses SQLite: a plain file on disk, so `npm run prisma:migrate`
+// works immediately with no external database, account, or connection
+// string. For production, switch provider to "postgresql" and url to
+// env("DATABASE_URL") — every field type below (String for sport/JSON
+// columns) already works unchanged on both connectors.
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Sport is a plain String (not a Prisma enum) because SQLite doesn't support
+// native enums. Valid values are "BASKETBALL" | "FOOTBALL", enforced at the
+// API boundary via zod (see src/types/tracker.ts and the route handlers).
+
+/// An app account. Optionally linked to a Player once someone claims
+/// their tracked player profile (matched by the tracker's player_external_id).
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+
+  player Player?
+
+  createdCompetitions Competition[] @relation("CompetitionCreator")
+}
+
+model Team {
+  id         String   @id @default(uuid())
+  sport      String
+  externalId String   @unique
+  name       String
+  createdAt  DateTime @default(now())
+
+  players   Player[]
+  homeGames Game[]     @relation("HomeTeam")
+  awayGames Game[]     @relation("AwayTeam")
+  gameStats GameStat[]
+}
+
+/// A tracked athlete. Created/matched during CSV ingestion via externalId;
+/// userId is filled in later if/when that person claims the profile in the app.
+model Player {
+  id         String   @id @default(uuid())
+  sport      String
+  externalId String   @unique
+  firstName  String
+  lastName   String
+  createdAt  DateTime @default(now())
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  gameStats           GameStat[]
+  awards              PlayerAward[]
+  competitionEntries  CompetitionParticipant[]
+}
+
+/// One completed game, as reported by a single tracker CSV file.
+model Game {
+  id         String   @id @default(uuid())
+  sport      String
+  externalId String   @unique
+  playedAt   DateTime
+
+  homeTeamId String
+  homeTeam   Team   @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId String
+  awayTeam   Team   @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  homeScore Int
+  awayScore Int
+
+  /// Original CSV filename, kept for traceability back to the tracker output.
+  sourceFile String
+  ingestedAt DateTime @default(now())
+
+  stats  GameStat[]
+  awards PlayerAward[]
+}
+
+/// One player's stat line for one game. `metrics` holds the sport-specific
+/// keys documented in docs/tracker-schema.md; keys are validated against
+/// StatMetricDefinition at ingestion time.
+model GameStat {
+  id            String   @id @default(uuid())
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id])
+  playerId      String
+  player        Player   @relation(fields: [playerId], references: [id])
+  teamId        String
+  team          Team     @relation(fields: [teamId], references: [id])
+  minutesPlayed Float?
+  metrics       String // JSON.stringify/parse in app code — see docs/tracker-schema.md
+  createdAt     DateTime @default(now())
+
+  @@unique([gameId, playerId])
+}
+
+/// Describes one metric key that can appear in GameStat.metrics for a sport,
+/// so the app knows how to label/format/sort it without hardcoding per stat.
+model StatMetricDefinition {
+  id             String  @id @default(uuid())
+  sport          String
+  key            String
+  label          String
+  unit           String?
+  higherIsBetter Boolean @default(true)
+
+  @@unique([sport, key])
+}
+
+/// A rule describing how an award is earned. `criteria` is interpreted by
+/// server/src/services/awards/engine.ts.
+model Award {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String
+  sport       String
+  criteria    String // JSON.stringify/parse in app code
+  createdAt   DateTime @default(now())
+
+  grants PlayerAward[]
+}
+
+/// One instance of a player earning an award, optionally tied to the game
+/// that triggered it (game-level awards vs. season/competition-level ones).
+model PlayerAward {
+  id        String   @id @default(uuid())
+  awardId   String
+  award     Award    @relation(fields: [awardId], references: [id])
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id])
+  gameId    String?
+  game      Game?    @relation(fields: [gameId], references: [id])
+  awardedAt DateTime @default(now())
+  /// Snapshot of the stat line that earned the award, for display.
+  value     String? // JSON.stringify/parse in app code
+}
+
+/// An online competition (e.g. a season-long leaderboard) that Players compete in.
+model Competition {
+  id          String   @id @default(uuid())
+  sport       String
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+
+  createdById String?
+  createdBy   User?   @relation("CompetitionCreator", fields: [createdById], references: [id])
+
+  participants CompetitionParticipant[]
+}
+
+model CompetitionParticipant {
+  id            String      @id @default(uuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  playerId      String
+  player        Player      @relation(fields: [playerId], references: [id])
+  score         Float       @default(0)
+  joinedAt      DateTime    @default(now())
+
+  @@unique([competitionId, playerId])
+}
