@@ -63,7 +63,7 @@ async function main() {
       name: "30-Point Game",
       description: "Scored 30 or more points in a single game.",
       sport: "BASKETBALL",
-      criteria: { type: "threshold", metric: "points", operator: ">=", value: 30 },
+      criteria: JSON.stringify({ type: "threshold", metric: "points", operator: ">=", value: 30 }),
     },
     update: {},
   });
@@ -75,13 +75,13 @@ async function main() {
       name: "Double-Double",
       description: "Reached double digits in points and rebounds in a single game.",
       sport: "BASKETBALL",
-      criteria: {
+      criteria: JSON.stringify({
         type: "all",
         criteria: [
           { type: "threshold", metric: "points", operator: ">=", value: 10 },
           { type: "threshold", metric: "rebounds_defensive", operator: ">=", value: 5 },
         ],
-      },
+      }),
     },
     update: {},
   });
@@ -93,7 +93,7 @@ async function main() {
       name: "Hat Trick",
       description: "Scored 3 or more goals in a single game.",
       sport: "FOOTBALL",
-      criteria: { type: "threshold", metric: "goals", operator: ">=", value: 3 },
+      criteria: JSON.stringify({ type: "threshold", metric: "goals", operator: ">=", value: 3 }),
     },
     update: {},
   });

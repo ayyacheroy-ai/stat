@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/client";
 
 /**
@@ -67,10 +66,10 @@ export async function evaluateAwardsForGame(gameId: string): Promise<number> {
   let granted = 0;
 
   for (const stat of game.stats) {
-    const metrics = stat.metrics as Record<string, unknown>;
+    const metrics = JSON.parse(stat.metrics) as Record<string, unknown>;
 
     for (const award of awards) {
-      const criteria = award.criteria as unknown as Criteria;
+      const criteria = JSON.parse(award.criteria) as Criteria;
       if (!metricsMeetCriteria(metrics, criteria)) continue;
 
       const existing = await prisma.playerAward.findFirst({
@@ -83,7 +82,7 @@ export async function evaluateAwardsForGame(gameId: string): Promise<number> {
           awardId: award.id,
           playerId: stat.playerId,
           gameId: game.id,
-          value: metrics as Prisma.InputJsonValue,
+          value: JSON.stringify(metrics),
         },
       });
       granted++;

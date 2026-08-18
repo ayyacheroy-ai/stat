@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db/client";
+import { withParsedAwardValue } from "../services/serialize";
 
 export const awardsRouter = Router();
 
@@ -15,5 +16,5 @@ awardsRouter.get("/awards/feed", async (_req, res) => {
     take: 50,
     include: { award: true, player: true, game: true },
   });
-  res.json(feed);
+  res.json(feed.map(withParsedAwardValue));
 });

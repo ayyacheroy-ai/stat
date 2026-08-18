@@ -78,12 +78,12 @@ export async function ingestGameCsv(csvBuffer: Buffer, sourceFile: string): Prom
         playerId: player.id,
         teamId: team.id,
         minutesPlayed: row.minutes_played ?? undefined,
-        metrics: JSON.parse(row.metrics_json),
+        metrics: row.metrics_json,
       },
       update: {
         teamId: team.id,
         minutesPlayed: row.minutes_played ?? undefined,
-        metrics: JSON.parse(row.metrics_json),
+        metrics: row.metrics_json,
       },
     });
   }

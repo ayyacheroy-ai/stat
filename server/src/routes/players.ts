@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { prisma } from "../db/client";
+import { withParsedAwardValue, withParsedMetrics } from "../services/serialize";
 
 export const playersRouter = Router();
 
 playersRouter.get("/players", async (req, res) => {
   const sport = typeof req.query.sport === "string" ? req.query.sport.toUpperCase() : undefined;
   const players = await prisma.player.findMany({
-    where: sport ? { sport: sport as "BASKETBALL" | "FOOTBALL" } : undefined,
+    where: sport ? { sport } : undefined,
     include: { team: true },
     orderBy: { lastName: "asc" },
     take: 100,
@@ -24,7 +25,11 @@ playersRouter.get("/players/:id", async (req, res, next) => {
         awards: { include: { award: true, game: true }, orderBy: { awardedAt: "desc" } },
       },
     });
-    res.json(player);
+    res.json({
+      ...player,
+      gameStats: player.gameStats.map(withParsedMetrics),
+      awards: player.awards.map(withParsedAwardValue),
+    });
   } catch (err) {
     next(err);
   }

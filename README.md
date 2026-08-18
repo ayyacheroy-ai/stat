@@ -11,7 +11,7 @@ competitions between players.
 | Layer    | Choice |
 |----------|--------|
 | Frontend | React Native (Expo) |
-| Backend  | Node.js + Express + PostgreSQL (via Prisma ORM) |
+| Backend  | Node.js + Express + Postgres-compatible SQL (via Prisma ORM) |
 
 **Why Express + Postgres over Supabase for this app:** ingestion is a
 custom, code-heavy pipeline (parse CSV → validate against a schema we
@@ -20,9 +20,17 @@ awards/leaderboard logic needs to run non-trivial aggregation queries and
 business logic server-side, not in client-side queries against
 auto-generated REST/GraphQL. A plain Express API gives full control over
 that pipeline and keeps deploy targets flexible (any host that runs Node +
-Postgres). Prisma is used as the ORM/migration tool on top of Postgres —
-swap it for raw SQL or another ORM later if needed, the schema is what
-matters.
+Postgres). Prisma is used as the ORM/migration tool — swap it for raw SQL
+or another ORM later if needed, the schema is what matters.
+
+**Local dev uses SQLite, not Postgres.** `server/prisma/schema.prisma`
+points at a plain file (`server/prisma/dev.db`) so `npm install` +
+`npm run prisma:migrate` works immediately with no database server, account,
+or connection string to set up. Every field in the schema (JSON payloads
+and the `sport` field included) is written as a plain `String`, which is
+valid on both SQLite and Postgres — so moving to Postgres for production is
+just changing the `datasource` block's `provider`/`url` in that file, no
+field rework needed.
 
 ## Repo structure
 
@@ -30,7 +38,7 @@ matters.
 .
 ├── docs/
 │   └── tracker-schema.md   # CSV format contract with the tracker system — source of truth
-├── server/                 # Express API + Postgres (Prisma)
+├── server/                 # Express API + SQLite for dev / Postgres-ready (Prisma)
 │   ├── prisma/
 │   │   ├── schema.prisma   # Team, Player, Game, GameStat, Award, Competition, ...
 │   │   └── seed.ts         # registers stat metric keys + a few example awards
@@ -56,19 +64,21 @@ matters.
 ### Prerequisites
 
 - Node.js 20+
-- A Postgres database (local install, Docker, or a hosted instance)
 - Expo Go app (or an iOS/Android simulator) for running the mobile app
+- No database to install — local dev uses a SQLite file created automatically
 
 ### 1. Backend (`server/`)
 
 ```bash
 cd server
 npm install
-cp .env.example .env   # then set DATABASE_URL to point at your Postgres instance
-npm run prisma:migrate # creates the schema
-npm run prisma:seed    # registers stat metric keys + example awards
-npm run dev             # starts the API on http://localhost:4000
+npm run prisma:migrate  # creates server/prisma/dev.db and seeds it automatically
+npm run dev              # starts the API on http://localhost:4000
 ```
+
+No `.env` file needed for local dev — `PORT` and `CORS_ORIGINS` both have
+working defaults. Copy `.env.example` to `.env` only if you want to
+override them.
 
 Check it's up: `curl http://localhost:4000/health`
 
