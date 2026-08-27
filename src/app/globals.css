@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0d;
+  --surface: #131318;
+  --surface-2: #1b1b22;
+  --border: rgba(255, 255, 255, 0.08);
+  --foreground: #f5f5f7;
+  --muted-foreground: #9a9aa6;
+
+  /* Overridden per-request from app-config.ts (see layout.tsx) — this is
+     just the fallback so styles never break if that wiring is removed. */
+  --accent: #2bd97c;
+  --accent-foreground: #06120a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-oswald);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
