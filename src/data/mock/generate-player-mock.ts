@@ -7,7 +7,7 @@ import { createRng, hashSeed, pick, randInt, randRange } from "./rng";
  * constant (not Date.now()) so a player's mock birth year never quietly
  * shifts depending on what day the demo happens to be viewed.
  */
-const MOCK_REFERENCE_YEAR = 2026;
+export const MOCK_REFERENCE_YEAR = 2026;
 
 const COUNTRIES = [
   "England",
