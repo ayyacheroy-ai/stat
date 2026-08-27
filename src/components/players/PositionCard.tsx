@@ -1,33 +1,16 @@
 import { Card } from "@/components/ui/Card";
 import { StatTile } from "@/components/ui/StatTile";
 import type { PlayerPosition } from "@/types/profile";
-
-/** Coordinates on a 0-100 x, 0-100 y pitch (attacking direction = up). */
-const POSITION_COORDS: Record<string, { x: number; y: number }> = {
-  GK: { x: 50, y: 92 },
-  CB: { x: 50, y: 75 },
-  LB: { x: 18, y: 72 },
-  RB: { x: 82, y: 72 },
-  CDM: { x: 50, y: 58 },
-  CM: { x: 50, y: 45 },
-  CAM: { x: 50, y: 32 },
-  LW: { x: 18, y: 25 },
-  RW: { x: 82, y: 25 },
-  ST: { x: 50, y: 12 },
-};
-
-function coord(position: string): { x: number; y: number } {
-  return POSITION_COORDS[position] ?? { x: 50, y: 50 };
-}
+import { getPositionCoord } from "@/data/mock/position-coords";
 
 /**
  * A small decorative pitch graphic for the position block only — not the
- * canonical reusable Pitch component (that comes with the heatmap/shot
- * map work in a later stage).
+ * canonical reusable Pitch component (that's for the heatmap/shot map,
+ * which draw on a full/half pitch rather than this compact card).
  */
 export function PositionCard({ position }: { position: PlayerPosition }) {
-  const primary = coord(position.primary);
-  const secondary = position.secondary ? coord(position.secondary) : undefined;
+  const primary = getPositionCoord(position.primary);
+  const secondary = position.secondary ? getPositionCoord(position.secondary) : undefined;
 
   return (
     <Card className="flex items-center gap-5">

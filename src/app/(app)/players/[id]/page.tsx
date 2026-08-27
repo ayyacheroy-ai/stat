@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getPlayers } from "@/lib/data-source";
 import { generatePlayerProfileExtras } from "@/data/mock/generate-player-profile";
+import { generateHeatmapPoints } from "@/data/mock/generate-heatmap";
+import { generateShotEvents } from "@/data/mock/generate-shot-map";
 import { getMetric } from "@/lib/metrics";
 import { Container } from "@/components/ui/Container";
 import { ProfileHeader } from "@/components/players/ProfileHeader";
@@ -9,18 +11,17 @@ import { PositionCard } from "@/components/players/PositionCard";
 import { MarketValueChart } from "@/components/players/MarketValueChart";
 import { SeasonSummaryStrip } from "@/components/players/SeasonSummaryStrip";
 import { RecentMatchesTable } from "@/components/players/RecentMatchesTable";
-import { ComingSoonCard } from "@/components/players/ComingSoonCard";
+import { Heatmap } from "@/components/pitch/Heatmap";
+import { ShotMap } from "@/components/pitch/ShotMap";
 import { SeasonPerformanceTable } from "@/components/players/SeasonPerformanceTable";
 import { AboutCard } from "@/components/players/AboutCard";
 
 /**
  * The deep Player Profile — the showcase screen of the app. Bio, market
- * value, season stats, and match history are mock (generated
- * deterministically per player); the "Physical · Tracked Live" row inside
- * SeasonSummaryStrip and the corresponding Physical group in the season
- * table are the tracker's real numbers, unchanged from the CSV. Heatmap
- * and shot map are stubbed here — the reusable Pitch component they need
- * comes in a later build stage.
+ * value, season stats, match history, heatmap, and shot map are all mock
+ * (generated deterministically per player); the "Physical · Tracked Live"
+ * row inside SeasonSummaryStrip and the Physical group in the season
+ * table are the tracker's real numbers, unchanged from the CSV.
  */
 export default async function PlayerProfilePage({
   params,
@@ -39,6 +40,16 @@ export default async function PlayerProfilePage({
   const ratingHint = getMetric(player, "rating")?.value ?? 6.5;
   const extras = generatePlayerProfileExtras(player.trackerId, marketValue, ratingHint);
 
+  const heatmapPoints = generateHeatmapPoints(player.trackerId, extras.position.primary);
+  const touches = getMetric(player, "touches")?.value;
+
+  const shotEvents = generateShotEvents(
+    player.trackerId,
+    getMetric(player, "shots")?.value ?? 0,
+    getMetric(player, "shotsOnTarget")?.value ?? 0,
+    getMetric(player, "goals")?.value ?? 0,
+  );
+
   return (
     <Container className="flex flex-col gap-4">
       <ProfileHeader player={player} extras={extras} />
@@ -47,14 +58,8 @@ export default async function PlayerProfilePage({
       <MarketValueChart history={extras.marketValueHistory} />
       <SeasonSummaryStrip player={player} />
       <RecentMatchesTable matches={extras.recentMatches} />
-      <ComingSoonCard
-        title="Heatmap"
-        description="Pitch-based heatmap visualization is coming in a later build stage."
-      />
-      <ComingSoonCard
-        title="Shot Map"
-        description="Shot map visualization is coming in a later build stage."
-      />
+      <Heatmap points={heatmapPoints} touches={touches} />
+      <ShotMap shots={shotEvents} />
       <SeasonPerformanceTable player={player} allPlayers={players} />
       <AboutCard player={player} extras={extras} />
     </Container>
