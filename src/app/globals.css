@@ -12,6 +12,11 @@
      just the fallback so styles never break if that wiring is removed. */
   --accent: #2bd97c;
   --accent-foreground: #06120a;
+
+  /* Secondary indicator color (Team B dot, draw/amber tier of the rating scale). */
+  --amber: #f5a524;
+  /* Loss badges, off-target shots, negative deltas. */
+  --danger: #e5484d;
 }
 
 @theme inline {
@@ -23,6 +28,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-amber: var(--amber);
+  --color-danger: var(--danger);
 
   --font-sans: var(--font-inter);
   --font-display: var(--font-oswald);

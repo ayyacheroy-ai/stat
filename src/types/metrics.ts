@@ -1,40 +1,55 @@
 /**
- * Flexible metrics bag for a tracked entity (currently: a player).
+ * A metric is never just a number — it's tagged with where it came from.
+ * 'tracker' = genuinely produced by our computer-vision pipeline's CSV export.
+ * 'mock'    = demo dressing generated to make the product feel complete.
  *
- * Every field is optional by design. The current CSV tracker only produces
- * a handful of these; a future computer-vision pipeline may add many more
- * (goals, passes, possession, ...), and other sports may use a different
- * subset entirely. UI components must treat any metric as possibly absent
- * and degrade gracefully rather than assuming a fixed set always exists.
+ * This tag is what lets the CSV upload feature (see data/adapters) flip a
+ * metric from mock to real without the UI changing at all — components
+ * render a metric the same way regardless of its source.
  */
-export interface PlayerMetrics {
-  /** Total distance covered, in meters. */
-  distance?: number;
-  /** Average speed across tracked time, in meters/second. */
-  averageSpeed?: number;
-  /** Peak speed reached, in km/h. */
-  topSpeed?: number;
-  /** Count of sprint efforts. */
-  sprints?: number;
-  /** Seconds of match time the player was actively tracked for. */
-  secondsTracked?: number;
+export type MetricSource = "tracker" | "mock";
 
-  // Not produced by the current tracker yet, but part of the eventual
-  // football analytics vocabulary. Left here so the UI and data model
-  // don't need to change shape when the AI pipeline starts emitting them.
-  goals?: number;
-  assists?: number;
-  shots?: number;
-  shotsOnTarget?: number;
-  passes?: number;
-  passAccuracy?: number;
-  possession?: number;
-  touches?: number;
-  tackles?: number;
-  interceptions?: number;
-
-  /** Escape hatch for any metric a data source provides that isn't modeled above yet. */
-  [metric: string]: number | undefined;
+export interface MetricValue {
+  value: number;
+  source: MetricSource;
 }
 
-export type MetricKey = keyof PlayerMetrics;
+/** A player's (or team's) full set of metrics, keyed by metric key. */
+export type MetricBag = Record<string, MetricValue>;
+
+/**
+ * Grouping used to organize the season performance table and other
+ * stat-heavy views. 'overall' covers rating/minutes/appearances — things
+ * that don't belong to a single phase of play.
+ */
+export type MetricGroup =
+  | "physical"
+  | "shooting"
+  | "passing"
+  | "possession"
+  | "defending"
+  | "discipline"
+  | "overall";
+
+/**
+ * The single source of truth for every stat the app can display. Adding a
+ * new metric anywhere in the product means adding one entry here — never
+ * hardcoding a label, unit, or CSV column name inside a component.
+ */
+export interface MetricDefinition {
+  key: string;
+  label: string;
+  unit?: string;
+  decimals: number;
+  group: MetricGroup;
+  /** Whether a bigger number is "better" — drives leaderboard sort direction and coloring. */
+  higherIsBetter: boolean;
+  /** CSV column name(s), bundled or uploaded, that populate this metric. */
+  mapsFrom: string[];
+  /** What this metric is today, absent any real data override. */
+  defaultSource: MetricSource;
+  /** Converts a stored raw value (e.g. meters) into its display unit (e.g. km). Identity if omitted. */
+  toDisplay?: (rawValue: number) => number;
+}
+
+export type MetricRegistry = Record<string, MetricDefinition>;

@@ -1,19 +1,18 @@
-export function formatDistanceKm(meters: number | undefined): string | null {
-  if (meters == null) return null;
-  return (meters / 1000).toFixed(2);
+/**
+ * Generic, metric-agnostic formatters. Anything specific to a metric's
+ * label/unit/decimals lives in the metric registry instead — this file is
+ * only for display helpers that aren't part of that system (bio fields,
+ * currency, percentages).
+ */
+
+export function formatCurrencyEur(amount: number | undefined): string | null {
+  if (amount == null) return null;
+  if (amount >= 1_000_000) return `€${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `€${(amount / 1_000).toFixed(0)}K`;
+  return `€${amount.toFixed(0)}`;
 }
 
-export function formatSpeedKmh(kmh: number | undefined): string | null {
-  if (kmh == null) return null;
-  return kmh.toFixed(1);
-}
-
-export function formatSpeedMs(ms: number | undefined): string | null {
-  if (ms == null) return null;
-  return ms.toFixed(2);
-}
-
-export function formatCount(value: number | undefined): string | null {
-  if (value == null) return null;
-  return String(Math.round(value));
+export function formatHeight(cm: number | undefined): string | null {
+  if (cm == null) return null;
+  return `${(cm / 100).toFixed(2)} m`;
 }

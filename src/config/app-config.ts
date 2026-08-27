@@ -22,7 +22,16 @@ export interface AppConfig {
   teams: Record<number, TeamConfig>;
   /** Tracker ID (as it appears in the tracker CSV's `tracker_id` column) -> player name. */
   players: Record<number, string>;
+  /** Demo-only toggles. Not read anywhere yet — reserved for a future "this stat is mock data" affordance. */
+  demo: {
+    showMockDataBadge: boolean;
+  };
 }
+
+// The per-stat registry (labels, units, which CSV columns feed which
+// metric, real-vs-mock defaults) lives in src/data/registry/metrics.ts —
+// kept out of this file since it's sizable, but it's the other half of
+// "everything editable in one obvious place."
 
 export const appConfig: AppConfig = {
   brand: {
@@ -39,6 +48,9 @@ export const appConfig: AppConfig = {
     13: "D. Silva",
     9: "J. Owusu",
     8: "K. Novak",
+  },
+  demo: {
+    showMockDataBadge: false,
   },
 };
 

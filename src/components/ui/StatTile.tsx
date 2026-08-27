@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-interface StatValueProps {
+interface StatTileProps {
   label: string;
   /** Pre-formatted display value, or null/undefined when the metric isn't available. */
   value: string | null | undefined;
@@ -9,11 +9,13 @@ interface StatValueProps {
 }
 
 /**
- * The hero stat number. Renders a placeholder instead of breaking when a
- * metric is missing — required for a flexible metrics model where not
- * every player/sport has every field.
+ * The hero stat number — repeats across every screen in the app (big bold
+ * value, small muted caption underneath). Build it once, use it
+ * everywhere, per the design brief. Renders a placeholder instead of
+ * breaking when a metric is missing, which matters once metrics are a
+ * flexible bag rather than a fixed set of fields.
  */
-export function StatValue({ label, value, unit, emphasis }: StatValueProps) {
+export function StatTile({ label, value, unit, emphasis }: StatTileProps) {
   const isAvailable = value !== null && value !== undefined && value !== "";
 
   return (

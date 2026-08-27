@@ -1,18 +1,17 @@
 import type { Player } from "@/types/player";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { StatValue } from "@/components/ui/StatValue";
+import { StatTile } from "@/components/ui/StatTile";
 import { getTeamColor, getTeamName } from "@/config/app-config";
-import {
-  formatCount,
-  formatDistanceKm,
-  formatSpeedKmh,
-  formatSpeedMs,
-} from "@/lib/format";
+import { formatPlayerMetric, getMetricUnit } from "@/lib/metrics";
 
+/**
+ * Shows the player's REAL physical stats only (distance, top speed, avg
+ * speed, sprints) — these are the four fields our tracker genuinely
+ * produces today. Mock stats (rating, goals, etc.) belong on the full
+ * Player Profile page, not this summary card.
+ */
 export function PlayerCard({ player }: { player: Player }) {
-  const { metrics } = player;
-
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
@@ -31,24 +30,27 @@ export function PlayerCard({ player }: { player: Player }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
-        <StatValue
+        <StatTile
           label="Distance"
-          value={formatDistanceKm(metrics.distance)}
-          unit="km"
+          value={formatPlayerMetric(player, "distance")}
+          unit={getMetricUnit("distance")}
           emphasis
         />
-        <StatValue
+        <StatTile
           label="Top Speed"
-          value={formatSpeedKmh(metrics.topSpeed)}
-          unit="km/h"
+          value={formatPlayerMetric(player, "topSpeed")}
+          unit={getMetricUnit("topSpeed")}
           emphasis
         />
-        <StatValue
+        <StatTile
           label="Avg Speed"
-          value={formatSpeedMs(metrics.averageSpeed)}
-          unit="m/s"
+          value={formatPlayerMetric(player, "averageSpeed")}
+          unit={getMetricUnit("averageSpeed")}
         />
-        <StatValue label="Sprints" value={formatCount(metrics.sprints)} />
+        <StatTile
+          label="Sprints"
+          value={formatPlayerMetric(player, "sprints")}
+        />
       </div>
     </Card>
   );
