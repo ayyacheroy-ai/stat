@@ -3,6 +3,10 @@ import { getMatches } from "@/data/mock/generate-matches";
 import { Container } from "@/components/ui/Container";
 import { MatchCard } from "@/components/matches/MatchCard";
 
+// Prevents build-time static prerendering — an uploaded CSV changes the
+// tracked match's real physical stats without a rebuild. See lib/upload-store.ts.
+export const dynamic = "force-dynamic";
+
 export default async function MatchesPage() {
   const players = await getPlayers();
   const matches = getMatches(players);

@@ -16,6 +16,10 @@ import { ShotMap } from "@/components/pitch/ShotMap";
 import { SeasonPerformanceTable } from "@/components/players/SeasonPerformanceTable";
 import { AboutCard } from "@/components/players/AboutCard";
 
+// Explicit, though dynamic route segments without generateStaticParams
+// already render on demand — see lib/upload-store.ts for why this matters.
+export const dynamic = "force-dynamic";
+
 /**
  * The deep Player Profile — the showcase screen of the app. Bio, market
  * value, season stats, match history, heatmap, and shot map are all mock

@@ -12,6 +12,11 @@ import { LatestMatchHero } from "@/components/matches/LatestMatchHero";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { appConfig } from "@/config/app-config";
 
+// Without this, Next prerenders Home once at build time as static HTML —
+// a CSV upload afterward would never show up here in production. See
+// lib/upload-store.ts.
+export const dynamic = "force-dynamic";
+
 /**
  * The real dashboard (brief §7.3), replacing the Stage A/B/C foundation
  * screen now that the pieces it links to (Matches, full Players list,

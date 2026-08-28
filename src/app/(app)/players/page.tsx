@@ -2,6 +2,10 @@ import { getPlayers } from "@/lib/data-source";
 import { Container } from "@/components/ui/Container";
 import { PlayerListItem } from "@/components/players/PlayerListItem";
 
+// Prevents build-time static prerendering — an uploaded CSV must show up
+// here without a rebuild. See lib/upload-store.ts.
+export const dynamic = "force-dynamic";
+
 export default async function PlayersPage() {
   const players = await getPlayers();
 

@@ -6,6 +6,10 @@ import { MatchHeader } from "@/components/matches/MatchHeader";
 import { TeamComparisonCard } from "@/components/matches/TeamComparisonCard";
 import { MatchPlayerLeaderboard } from "@/components/matches/MatchPlayerLeaderboard";
 
+// Explicit, though dynamic route segments without generateStaticParams
+// already render on demand — see lib/upload-store.ts for why this matters.
+export const dynamic = "force-dynamic";
+
 export default async function MatchOverviewPage({
   params,
 }: {
