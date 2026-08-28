@@ -18,3 +18,16 @@ export function formatPlayerMetric(player: Player, key: string): string | null {
 export function getMetricUnit(key: string): string | undefined {
   return getMetricDefinition(key)?.unit;
 }
+
+/** Players who have this metric, sorted best-first per the registry's higherIsBetter flag. */
+export function rankPlayersByMetric(players: Player[], key: string): Player[] {
+  const higherIsBetter = getMetricDefinition(key)?.higherIsBetter ?? true;
+
+  return players
+    .filter((player) => getMetric(player, key))
+    .sort((a, b) => {
+      const aValue = getMetric(a, key)?.value ?? 0;
+      const bValue = getMetric(b, key)?.value ?? 0;
+      return higherIsBetter ? bValue - aValue : aValue - bValue;
+    });
+}
