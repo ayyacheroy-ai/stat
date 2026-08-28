@@ -10,7 +10,7 @@ export function LatestMatchHero({ match }: { match: Match }) {
 
   return (
     <Link href={`/matches/${match.id}`} className="block">
-      <Card className="flex flex-col gap-3 transition-colors hover:border-accent/40">
+      <Card className="flex flex-col gap-3 transition hover:border-accent/40 active:scale-[0.98]">
         <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide text-muted-foreground">
           <span>Latest Match</span>
           <span className="text-accent">{match.status === "COMPLETE" ? "Full Time" : match.status}</span>

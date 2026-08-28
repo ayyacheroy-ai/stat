@@ -22,8 +22,9 @@ export interface AppConfig {
   teams: Record<number, TeamConfig>;
   /** Tracker ID (as it appears in the tracker CSV's `tracker_id` column) -> player name. */
   players: Record<number, string>;
-  /** Demo-only toggles. Not read anywhere yet — reserved for a future "this stat is mock data" affordance. */
+  /** Demo-only toggles. */
   demo: {
+    /** Shows a small dot next to any stat that's currently mock data (see lib/demo-badge.ts). Off by default. */
     showMockDataBadge: boolean;
   };
 }

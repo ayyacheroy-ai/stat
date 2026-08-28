@@ -11,6 +11,7 @@ import { PlayerRankRow } from "@/components/players/PlayerRankRow";
 import { LatestMatchHero } from "@/components/matches/LatestMatchHero";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { appConfig } from "@/config/app-config";
+import { showMockBadge } from "@/lib/demo-badge";
 
 // Without this, Next prerenders Home once at build time as static HTML —
 // a CSV upload afterward would never show up here in production. See
@@ -55,6 +56,7 @@ export default async function HomePage() {
           label="Possession"
           value={formatMetricValue("possession", currentMatch.teamStats[0].possession)}
           unit="%"
+          mock={showMockBadge(true)}
         />
       </div>
 
@@ -68,9 +70,13 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="flex flex-col gap-2">
-          {topPerformers.map((player, index) => (
-            <PlayerRankRow key={player.id} player={player} rank={index + 1} metricKey="distance" maxValue={maxDistance} />
-          ))}
+          {topPerformers.length > 0 ? (
+            topPerformers.map((player, index) => (
+              <PlayerRankRow key={player.id} player={player} rank={index + 1} metricKey="distance" maxValue={maxDistance} />
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">No tracked players yet.</p>
+          )}
         </div>
       </Card>
 
@@ -82,14 +88,18 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="flex flex-col gap-3">
-          {pastMatches.slice(0, 3).map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
+          {pastMatches.length > 0 ? (
+            pastMatches.slice(0, 3).map((match) => <MatchCard key={match.id} match={match} />)
+          ) : (
+            <Card>
+              <p className="text-sm text-muted-foreground">No past matches yet.</p>
+            </Card>
+          )}
         </div>
       </div>
 
       <Link href="/upload" className="block">
-        <Card className="flex items-center justify-between gap-3 transition-colors hover:border-accent/40">
+        <Card className="flex items-center justify-between gap-3 transition hover:border-accent/40 active:scale-[0.98]">
           <div>
             <div className="text-sm font-medium text-foreground">Upload Match Data</div>
             <div className="text-xs text-muted-foreground">

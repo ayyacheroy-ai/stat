@@ -8,7 +8,7 @@ import { formatPlayerMetric, getMetricUnit } from "@/lib/metrics";
 export function PlayerListItem({ player }: { player: Player }) {
   return (
     <Link href={`/players/${player.id}`} className="block">
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 transition-colors hover:border-accent/40">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 transition hover:border-accent/40 active:scale-[0.98]">
         <TeamDot color={getTeamColor(player.teamId)} />
         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{player.name}</span>
         <span className="font-display text-sm text-foreground">

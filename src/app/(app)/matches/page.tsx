@@ -1,6 +1,7 @@
 import { getPlayers } from "@/lib/data-source";
 import { getMatches } from "@/data/mock/generate-matches";
 import { Container } from "@/components/ui/Container";
+import { Card } from "@/components/ui/Card";
 import { MatchCard } from "@/components/matches/MatchCard";
 
 // Prevents build-time static prerendering — an uploaded CSV changes the
@@ -14,11 +15,17 @@ export default async function MatchesPage() {
   return (
     <Container className="flex flex-col gap-4">
       <h1 className="font-display text-2xl text-foreground">Matches</h1>
-      <div className="flex flex-col gap-3">
-        {matches.map((match) => (
-          <MatchCard key={match.id} match={match} />
-        ))}
-      </div>
+      {matches.length > 0 ? (
+        <div className="flex flex-col gap-3">
+          {matches.map((match) => (
+            <MatchCard key={match.id} match={match} />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <p className="text-sm text-muted-foreground">No matches yet.</p>
+        </Card>
+      )}
     </Container>
   );
 }

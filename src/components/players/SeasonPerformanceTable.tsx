@@ -9,6 +9,7 @@ import {
   metricGroupOrder,
 } from "@/data/registry/metrics";
 import { getMetric } from "@/lib/metrics";
+import { showMockBadge } from "@/lib/demo-badge";
 
 /**
  * Per-90 scaling only makes sense for cumulative counting stats over a
@@ -80,7 +81,12 @@ export function SeasonPerformanceTable({ player, allPlayers }: { player: Player;
 
                 return (
                   <div key={def.key} className="flex items-center gap-3 py-2 text-sm">
-                    <span className="flex-1 text-foreground">{def.label}</span>
+                    <span className="flex flex-1 items-center gap-1 text-foreground">
+                      {def.label}
+                      {showMockBadge(metric.source === "mock") && (
+                        <span className="h-1 w-1 rounded-full bg-amber" title="Demo data" />
+                      )}
+                    </span>
                     <span className="w-14 text-right font-display text-foreground">
                       {total}
                       {def.unit && <span className="ml-0.5 text-xs text-muted-foreground">{def.unit}</span>}

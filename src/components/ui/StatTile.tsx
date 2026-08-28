@@ -6,6 +6,12 @@ interface StatTileProps {
   value: string | null | undefined;
   unit?: string;
   emphasis?: boolean;
+  /**
+   * Shows a subtle "demo data" dot next to the label. Callers should pass
+   * the result of lib/demo-badge.ts's showMockBadge(), not a raw boolean —
+   * that's what keeps this off by default and consistent everywhere.
+   */
+  mock?: boolean;
 }
 
 /**
@@ -15,7 +21,7 @@ interface StatTileProps {
  * breaking when a metric is missing, which matters once metrics are a
  * flexible bag rather than a fixed set of fields.
  */
-export function StatTile({ label, value, unit, emphasis }: StatTileProps) {
+export function StatTile({ label, value, unit, emphasis, mock }: StatTileProps) {
   const isAvailable = value !== null && value !== undefined && value !== "";
 
   return (
@@ -39,8 +45,9 @@ export function StatTile({ label, value, unit, emphasis }: StatTileProps) {
           <span className="text-muted-foreground">—</span>
         )}
       </div>
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
+        {mock && <span className="h-1 w-1 rounded-full bg-amber" title="Demo data" />}
       </div>
     </div>
   );

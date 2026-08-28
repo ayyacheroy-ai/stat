@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/Card";
 import { StatTile } from "@/components/ui/StatTile";
 import type { Player } from "@/types/player";
 import { getMetricDefinition } from "@/data/registry/metrics";
-import { formatPlayerMetric, getMetricUnit } from "@/lib/metrics";
+import { formatPlayerMetric, getMetric, getMetricUnit } from "@/lib/metrics";
+import { showMockBadge } from "@/lib/demo-badge";
 
 const SEASON_KEYS = [
   "goals",
@@ -31,6 +32,11 @@ function MetricRow({ player, keys }: { player: Player; keys: string[] }) {
             label={def?.label ?? key}
             value={formatPlayerMetric(player, key)}
             unit={getMetricUnit(key)}
+            // Checked per-metric rather than assumed by group: a CSV
+            // upload can flip an individual Season stat to real without
+            // moving it out of this row, so the badge has to reflect the
+            // metric's actual current source, not just which section it's in.
+            mock={showMockBadge(getMetric(player, key)?.source === "mock")}
           />
         );
       })}

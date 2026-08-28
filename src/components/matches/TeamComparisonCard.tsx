@@ -3,11 +3,16 @@ import { Card } from "@/components/ui/Card";
 import { ComparisonRow } from "./ComparisonRow";
 import { getTeamColor } from "@/config/app-config";
 import { formatMetricValue } from "@/data/registry/metrics";
+import { showMockBadge } from "@/lib/demo-badge";
 
 export function TeamComparisonCard({ match }: { match: Match }) {
   const [home, away] = match.teamStats;
   const homeColor = getTeamColor(match.teams[0].id);
   const awayColor = getTeamColor(match.teams[1].id);
+  // Possession has no tracker equivalent yet — always mock. The physical
+  // rows are only mock when this match itself isn't the one our tracker
+  // actually covered (see Match.isTracked).
+  const physicalIsMock = showMockBadge(!match.isTracked);
 
   return (
     <Card className="flex flex-col gap-5">
@@ -21,6 +26,7 @@ export function TeamComparisonCard({ match }: { match: Match }) {
         awayDisplay={`${away.possession}%`}
         homeColor={homeColor}
         awayColor={awayColor}
+        mock={showMockBadge(true)}
       />
 
       {match.isTracked && (
@@ -35,6 +41,7 @@ export function TeamComparisonCard({ match }: { match: Match }) {
         awayDisplay={`${formatMetricValue("distance", away.distance)} km`}
         homeColor={homeColor}
         awayColor={awayColor}
+        mock={physicalIsMock}
       />
       <ComparisonRow
         label="Sprints"
@@ -44,6 +51,7 @@ export function TeamComparisonCard({ match }: { match: Match }) {
         awayDisplay={String(away.sprints)}
         homeColor={homeColor}
         awayColor={awayColor}
+        mock={physicalIsMock}
       />
       <ComparisonRow
         label="Top Speed"
@@ -53,6 +61,7 @@ export function TeamComparisonCard({ match }: { match: Match }) {
         awayDisplay={`${formatMetricValue("topSpeed", away.topSpeed)} km/h`}
         homeColor={homeColor}
         awayColor={awayColor}
+        mock={physicalIsMock}
       />
     </Card>
   );

@@ -10,7 +10,7 @@ export function MatchCard({ match }: { match: Match }) {
 
   return (
     <Link href={`/matches/${match.id}`} className="block">
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent/40">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/40 active:scale-[0.98]">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[10px] font-semibold uppercase text-muted-foreground">
           {match.competition.slice(0, 1)}
         </div>

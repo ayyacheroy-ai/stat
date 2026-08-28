@@ -3,29 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
-import { HomeIcon, MatchesIcon, PlayersIcon, ProfileIcon } from "./nav-icons";
+import { NAV_ITEMS } from "./nav-items";
 
-const TABS = [
-  { href: "/home", label: "Home", Icon: HomeIcon },
-  { href: "/matches", label: "Matches", Icon: MatchesIcon },
-  { href: "/players", label: "Players", Icon: PlayersIcon },
-  { href: "/profile", label: "Profile", Icon: ProfileIcon },
-] as const;
-
+/** Mobile/tablet nav — hidden on large screens in favor of Sidebar (see AppShell). */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
-        {TABS.map(({ href, label, Icon }) => {
+    <nav className="sticky bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+      <div className="mx-auto flex w-full max-w-md sm:max-w-2xl">
+        {NAV_ITEMS.map(({ href, label, Icon }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors active:scale-[0.96]",
                 isActive ? "text-accent" : "text-muted-foreground",
               )}
             >

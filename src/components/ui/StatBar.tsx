@@ -5,7 +5,7 @@ export function StatBar({ value, max, color }: { value: number; max: number; col
   return (
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
       <div
-        className="h-full rounded-full"
+        className="h-full rounded-full transition-[width] duration-300 ease-out"
         style={{ width: `${percent}%`, backgroundColor: color ?? "var(--color-accent)" }}
       />
     </div>

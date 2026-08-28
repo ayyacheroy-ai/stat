@@ -26,9 +26,13 @@ export function LeaderboardClient({ players }: { players: Player[] }) {
     <div className="flex flex-col gap-4">
       <FilterChips options={METRIC_OPTIONS} value={metricKey} onChange={setMetricKey} />
       <div className="flex flex-col gap-2">
-        {ranked.map((player, index) => (
-          <PlayerRankRow key={player.id} player={player} rank={index + 1} metricKey={metricKey} maxValue={maxValue} />
-        ))}
+        {ranked.length > 0 ? (
+          ranked.map((player, index) => (
+            <PlayerRankRow key={player.id} player={player} rank={index + 1} metricKey={metricKey} maxValue={maxValue} />
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground">No players have this stat yet.</p>
+        )}
       </div>
     </div>
   );

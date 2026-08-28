@@ -15,7 +15,7 @@ export function Container({
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-md px-4 sm:max-w-2xl lg:max-w-4xl",
+        "animate-fade-in mx-auto w-full max-w-md px-4 sm:max-w-2xl lg:max-w-4xl",
         className,
       )}
     >
