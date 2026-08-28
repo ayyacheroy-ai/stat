@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // backend/ is its own Node package (own package.json, tsconfig, and
+    // lint concerns) — not part of this Next.js app.
+    "backend/**",
   ]),
 ]);
 

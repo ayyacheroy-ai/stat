@@ -1,0 +1,200 @@
+// Pitchline backend domain model.
+//
+// Scope boundary (see backend/README.md for the full rationale): this
+// database holds only REAL data — tracker output, matches that actually
+// exist, users, processing jobs, and pointers to stored media. It never
+// stores the frontend's mock/demo dressing (fabricated match history,
+// fabricated bios, fabricated shot maps, etc.) — that generation stays in
+// the frontend's data/mock layer exactly as it works today, applied on
+// top of whatever this API returns. Mixing fabricated rows into a
+// database would make "real" and "mock" indistinguishable at the one
+// layer where that distinction matters most.
+//
+// SQLite is deliberately the default here: this backend runs as its own
+// long-lived Node process (not colocated with the Vercel-deployed
+// frontend's serverless functions), so a file-backed database is
+// perfectly durable — unlike the frontend's current in-memory upload
+// store, which the frontend's own code comments already flag as unsafe
+// specifically because Vercel serverless instances don't share memory.
+// Swapping to Postgres later is a one-line change to `provider` +
+// `DATABASE_URL`; nothing above the Prisma client needs to change.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id     Int    @id
+  name   String
+  color  String
+
+  players     Player[]
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
+}
+
+model Player {
+  id        String  @id @default(cuid())
+  trackerId Int     @unique
+  name      String
+  teamId    Int
+  team      Team    @relation(fields: [teamId], references: [id])
+
+  // Bio fields. None of these have a real data source today (see AGENTS.md
+  // §7 in the frontend repo — bio is 100% mock, with no upload path). They
+  // exist here so the schema doesn't need to change the day a real bio
+  // source (e.g. a roster import) shows up; until then every row leaves
+  // them null and the API omits them, exactly like the current CSV adapter
+  // always returning `bio: {}`.
+  heightCm        Int?
+  ageYears        Int?
+  dateOfBirth     String?
+  preferredFoot   String?
+  country         String?
+  shirtNumber     Int?
+  marketValueEur  Int?
+  contractEndYear Int?
+
+  statistics PlayerMatchStatistic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MatchStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  status      MatchStatus @default(PENDING)
+  date        DateTime
+  competition String
+
+  homeTeamId Int
+  awayTeamId Int
+  homeTeam   Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  // Deliberately no score/possession columns. Every match in this app —
+  // tracked or not — has a fabricated scoreline and possession split today
+  // (see AGENTS.md §7: "The tracked match's team-level distance/sprints/
+  // topSpeed... genuine sums/maxes... [but] scoreline and possession split
+  // are mock"). This backend has no way to detect goals or the ball, so it
+  // never persists a fake score as if it were real. Score/possession stay
+  // exactly where they are today: generated client-side.
+
+  statistics    PlayerMatchStatistic[]
+  processingJobs ProcessingJob[]
+  mediaAssets   MediaAsset[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MetricSource {
+  TRACKER
+  MOCK
+}
+
+// One row per (player, match, metric). Keyed this way — not as a flat
+// per-player bag — because a player's real stats are inherently per-match
+// (see the frontend handoff's own worked example: "a PlayerStatistics
+// entity keyed by player+match+metric"). The frontend's current MetricBag
+// shape is a single-match projection of this table.
+model PlayerMatchStatistic {
+  id        String       @id @default(cuid())
+  playerId  String
+  matchId   String
+  metricKey String
+  value     Float
+  source    MetricSource @default(TRACKER)
+
+  player Player @relation(fields: [playerId], references: [id])
+  match  Match  @relation(fields: [matchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([playerId, matchId, metricKey])
+  @@index([matchId])
+}
+
+enum ProcessingJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+// Structural placeholder for the async video pipeline described in the
+// handoff (§11): heavy processing must never run inside an HTTP request.
+// This model and the POST /matches route that creates it only establish
+// the queue boundary — nothing in this repo actually consumes the queue
+// or runs CV/tracking. A real worker (separate process/service) would
+// poll for QUEUED jobs, flip them to PROCESSING, write results as
+// PlayerMatchStatistic rows, and finish at COMPLETE or FAILED.
+model ProcessingJob {
+  id           String              @id @default(cuid())
+  matchId      String
+  match        Match               @relation(fields: [matchId], references: [id])
+  status       ProcessingJobStatus @default(QUEUED)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([matchId])
+}
+
+enum MediaAssetKind {
+  SOURCE_VIDEO
+  PROCESSED_VIDEO
+  HEATMAP_IMAGE
+}
+
+// A pointer into object storage, never the binary itself (handoff §11:
+// "object storage holds large binary media... never the DB"). `storageKey`
+// is opaque here on purpose — a local path today, an S3/GCS key tomorrow;
+// this backend doesn't implement an object store, so nothing yet writes a
+// real file behind this key.
+model MediaAsset {
+  id         String         @id @default(cuid())
+  matchId    String
+  match      Match          @relation(fields: [matchId], references: [id])
+  kind       MediaAssetKind
+  storageKey String
+
+  createdAt DateTime @default(now())
+
+  @@index([matchId])
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  PLAYER
+  VIEWER
+}
+
+// Foundation only — not wired into the frontend. The frontend's fake
+// cookie-based auth (src/lib/auth/) stays exactly as-is; swapping it for
+// real sessions backed by this table is a deliberately separate,
+// discuss-first change (handoff §9/§14), not something this pass does
+// unilaterally.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(VIEWER)
+
+  createdAt DateTime @default(now())
+}

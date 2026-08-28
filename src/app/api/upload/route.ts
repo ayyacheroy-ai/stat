@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseCsv } from "@/data/csv/parser";
 import { extractMetricsFromRow } from "@/data/adapters/csv-row-adapter";
+import { postUploadToApi } from "@/data/adapters/api-adapter";
 import { applyUploadedMetrics } from "@/lib/upload-store";
 import { getPlayers } from "@/lib/data-source";
 
@@ -14,9 +15,19 @@ export const dynamic = "force-dynamic";
  * identical to any other real stat. Never throws on bad input: malformed
  * rows and unknown tracker_ids are just counted and reported back, not
  * merged.
+ *
+ * When `PITCHLINE_API_URL` is set, this forwards straight to the
+ * backend's own POST /uploads (same request/response contract) instead
+ * of writing to the in-memory store — see lib/data-source.ts for the
+ * same split on the read side.
  */
 export async function POST(request: Request) {
   const csvText = await request.text();
+
+  if (process.env.PITCHLINE_API_URL) {
+    const { status, body } = await postUploadToApi(process.env.PITCHLINE_API_URL, csvText);
+    return NextResponse.json(body, { status });
+  }
 
   if (!csvText.trim()) {
     return NextResponse.json({ error: "The uploaded file is empty." }, { status: 400 });
