@@ -15,6 +15,8 @@ import { Heatmap } from "@/components/pitch/Heatmap";
 import { ShotMap } from "@/components/pitch/ShotMap";
 import { SeasonPerformanceTable } from "@/components/players/SeasonPerformanceTable";
 import { AboutCard } from "@/components/players/AboutCard";
+import { PlayerMainStats } from "@/components/players/PlayerMainStats";
+import { PerformanceCard } from "@/components/players/PerformanceCard";
 
 // Explicit, though dynamic route segments without generateStaticParams
 // already render on demand — see lib/upload-store.ts for why this matters.
@@ -57,12 +59,18 @@ export default async function PlayerProfilePage({
   return (
     <Container className="flex flex-col gap-4">
       <ProfileHeader player={player} extras={extras} />
+      <PlayerMainStats player={player} />
+      <Heatmap points={heatmapPoints} touches={touches} />
+      <PerformanceCard player={player} />
+
+      <div className="mt-2 border-t border-border pt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        More detail
+      </div>
       <BioStatsCard bio={player.bio} />
       <PositionCard position={extras.position} />
       <MarketValueChart history={extras.marketValueHistory} />
       <SeasonSummaryStrip player={player} />
       <RecentMatchesTable matches={extras.recentMatches} />
-      <Heatmap points={heatmapPoints} touches={touches} />
       <ShotMap shots={shotEvents} />
       <SeasonPerformanceTable player={player} allPlayers={players} />
       <AboutCard player={player} extras={extras} />

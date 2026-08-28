@@ -19,7 +19,7 @@ export async function login() {
     path: "/",
     sameSite: "lax",
   });
-  redirect("/home");
+  redirect("/matches");
 }
 
 export async function logout() {

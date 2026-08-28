@@ -3,9 +3,11 @@
 import { useState } from "react";
 import type { Player } from "@/types/player";
 import type { PlayerProfileExtras } from "@/types/profile";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { RatingPill } from "@/components/ui/RatingPill";
+import { TeamDot } from "@/components/ui/TeamDot";
 import { getTeamColor, getTeamName } from "@/config/app-config";
+import { getMetric } from "@/lib/metrics";
 import { cn } from "@/lib/cn";
 
 /**
@@ -14,6 +16,7 @@ import { cn } from "@/lib/cn";
  */
 export function ProfileHeader({ player, extras }: { player: Player; extras: PlayerProfileExtras }) {
   const [isFollowing, setIsFollowing] = useState(false);
+  const rating = getMetric(player, "rating")?.value;
 
   const first = extras.marketValueHistory[0]?.valueEur;
   const last = extras.marketValueHistory[extras.marketValueHistory.length - 1]?.valueEur;
@@ -24,11 +27,19 @@ export function ProfileHeader({ player, extras }: { player: Player; extras: Play
     <div className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {extras.currentClub} · #{player.bio.shirtNumber ?? "—"}
-          </span>
           <h1 className="font-display text-3xl leading-none text-foreground">{player.name}</h1>
-          <Badge label={getTeamName(player.teamId)} color={getTeamColor(player.teamId)} />
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            #{player.bio.shirtNumber ?? "—"} ·{" "}
+            <TeamDot color={getTeamColor(player.teamId)} /> {getTeamName(player.teamId)}
+          </span>
+          {rating != null && (
+            <div className="flex items-center gap-2 pt-0.5">
+              <RatingPill rating={rating} />
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Rating
+              </span>
+            </div>
+          )}
         </div>
         <Button
           variant={isFollowing ? "secondary" : "primary"}

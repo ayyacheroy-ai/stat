@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
   const isAuthenticated = request.cookies.has(AUTH_COOKIE_NAME);
 
   if (isAuthenticated && pathname === "/login") {
-    return NextResponse.redirect(new URL("/home", request.url));
+    return NextResponse.redirect(new URL("/matches", request.url));
   }
 
   if (!isAuthenticated && !PUBLIC_PATHS.has(pathname)) {
